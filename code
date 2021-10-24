@@ -1,0 +1,52 @@
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <iostream>
+
+using namespace std;
+using namespace cv;
+
+Mat imgGray, imgBlur, imgCanny, imgDil;
+RNG rng(12345);
+
+int main()
+{
+
+  string path = "mrk.jpg";
+  Mat img = imread(path);
+
+  cvtColor(img, imgGray, COLOR_BGR2GRAY);
+  GaussianBlur(imgGray, imgBlur, Size(3, 3), 3, 0);
+  Canny(imgBlur, imgCanny, 25, 75);
+  
+  Mat kernel = getStructuringElement(MORPH_RECT, Size(3, 3));
+  dilate(imgCanny, imgDil, kernel);
+  
+  vector<vector<Point»contours;
+  vector<Vec4i>hierarchy;
+  
+  findContours(imgCanny, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+  
+  Mat drawing = Mat::zeros(imgCanny.size(), CV_8UC3);
+  for (size_t i = 0; i < contours.size(); i++)
+  {
+
+    Scalar color = Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
+  drawContours(drawing, contours, (int)i, color, 0, LINE_8, hierarchy, 0);
+
+  }
+  imshow("Image", img);
+  imshow("Image Canny", imgCanny);
+  imshow("Image contours", drawing);
+
+  vector<int> compression_params;
+  compression_params.push_back(IMWRITE_JPEG_QUALITY);
+  compression_params.push_back(100);
+
+  imwrite("C:/Users/Makc/Desktop/vita/canny.jpg", imgCanny, compression_params);
+  imwrite("C:/Users/Makc/Desktop/vita/contours.jpg", drawing, compression_params);
+
+  waitKey(0);
+ 
+}
